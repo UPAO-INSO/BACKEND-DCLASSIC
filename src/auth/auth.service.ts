@@ -38,9 +38,20 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         secret: envs.jwtSecret,
       });
 
+      const expiresIn = exp * 1000 - Date.now();
+
+      let newToken = token;
+
+      if (expiresIn < 15 * 60 * 1000) {
+        newToken = await this.signJWT({ ...user });
+      }
+
       return {
-        user,
-        token: await this.signJWT(user),
+        user: {
+          ...user,
+          id: sub,
+        },
+        token: newToken,
       };
     } catch (error) {
       throw new InternalServerErrorException('Invalid token: ', error.message);
