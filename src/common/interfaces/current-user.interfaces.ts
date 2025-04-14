@@ -1,6 +1,7 @@
 export interface CurrentUser {
-  id: string;
+  id: number;
   name: string;
   email: string;
   role: string;
+  refreshToken: string;
 }

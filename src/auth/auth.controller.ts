@@ -30,4 +30,21 @@ export class AuthController {
       token,
     };
   }
+
+  @Post('refresh-token')
+  refreshAccessToken(@User() user: CurrentUser) {
+    return this.authService.refreshAccessToken(user.refreshToken);
+  }
+
+  @Post('logout')
+  logout(@User() user: CurrentUser) {
+    return this.authService.logout(user.id);
+  }
+
+  // @ApiBearerAuth()
+  // @Get('profile')
+  // @Auth(Role.EMPLEADO)
+  // profile(@ActiveUser() user: UserActiveInterface) {
+  //   return this.authService.profile(user);
+  // }
 }
