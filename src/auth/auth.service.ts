@@ -64,13 +64,13 @@ export class AuthService extends PrismaClient implements OnModuleInit {
 
       let newToken = token;
 
-      console.log('expiresIn', expiresIn);
+      this.logger.debug('expiresIn: ' + expiresIn);
 
       if (expiresIn < 15 * 60 * 1000) {
         newToken = await this.signJWT({ ...user });
       }
 
-      console.log('newToken', newToken);
+      this.logger.debug('newToken: ' + newToken);
 
       return {
         user: {
