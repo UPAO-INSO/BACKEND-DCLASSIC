@@ -63,7 +63,7 @@ export class BebidasService extends PrismaClient implements OnModuleInit {
     });
 
     if (!bebida) {
-      throw new NotFoundException(`Mesa with id #${id} not found`);
+      throw new NotFoundException(`Bebida with id #${id} not found`);
     }
 
     return bebida;

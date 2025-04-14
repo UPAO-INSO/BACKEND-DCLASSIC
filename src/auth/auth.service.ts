@@ -170,7 +170,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
       // Busca al usuario y verifica que el token coincida
       const user = await this.usersService.findOne(payload.id);
 
-      if (!user || user.refreshToken !== refreshToken) {
+      if (!user || !(await bcrypt.compare(refreshToken, user.refreshToken))) {
         throw new UnauthorizedException(
           'Invalid refresh token or user not found',
         );
