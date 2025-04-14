@@ -18,7 +18,6 @@ const envsSchema = joi
 const { error, value } = envsSchema.validate(process.env);
 
 if (error) {
-  console.log(`Config validation error:  ${error.message}`);
   throw new Error(`Config validation error: ${error.message}`);
 }
 

@@ -101,9 +101,6 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         data: { refreshToken: hashedRefreshToken },
       });
 
-      console.log('token', refreshToken);
-      console.log('hashed', hashedRefreshToken);
-
       const { password: _, refreshToken: __, ...rest } = user;
 
       return {
@@ -156,7 +153,6 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         refreshToken,
       };
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException('Error logging', error.message);
     }
   }
