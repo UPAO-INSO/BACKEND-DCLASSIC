@@ -55,7 +55,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
 
   async verifyToken(token: string) {
     try {
-      console.log('token', token);
+      this.logger.debug('Verifying token...');
       const { sub, iat, exp, ...user } = this.jwtService.verify(token, {
         secret: envs.jwtAccessSecret,
       });
