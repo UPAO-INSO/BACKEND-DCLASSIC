@@ -85,7 +85,7 @@ export class BebidasService extends PrismaClient implements OnModuleInit {
 
     const bebida = await this.findOne(id);
     return {
-      message: 'mesa eliminada',
+      message: 'bebida eliminada',
       bebida,
     };
   }
