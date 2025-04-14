@@ -121,7 +121,117 @@ exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
   name: 'name',
-  password: 'password'
+  password: 'password',
+  role: 'role',
+  refreshToken: 'refreshToken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastLogin: 'lastLogin'
+};
+
+exports.Prisma.ClienteScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  dni: 'dni',
+  telefono: 'telefono',
+  email: 'email'
+};
+
+exports.Prisma.MesaScalarFieldEnum = {
+  id: 'id',
+  numero: 'numero',
+  capacidad: 'capacidad',
+  estado: 'estado'
+};
+
+exports.Prisma.CartaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  precio: 'precio'
+};
+
+exports.Prisma.PlatoScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  precio: 'precio',
+  cartaId: 'cartaId'
+};
+
+exports.Prisma.TipoPagoScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre'
+};
+
+exports.Prisma.ComprobanteScalarFieldEnum = {
+  id: 'id',
+  tipoComprobante: 'tipoComprobante',
+  numero: 'numero',
+  fechaEmision: 'fechaEmision',
+  tipoPagoId: 'tipoPagoId'
+};
+
+exports.Prisma.PedidoScalarFieldEnum = {
+  id: 'id',
+  fecha: 'fecha',
+  total: 'total',
+  clienteId: 'clienteId',
+  mesaId: 'mesaId',
+  comprobanteId: 'comprobanteId',
+  detalleAdicionalId: 'detalleAdicionalId'
+};
+
+exports.Prisma.PedidoItemScalarFieldEnum = {
+  id: 'id',
+  cantidad: 'cantidad',
+  pedidoId: 'pedidoId',
+  platoId: 'platoId'
+};
+
+exports.Prisma.DetalleAdicionalScalarFieldEnum = {
+  id: 'id'
+};
+
+exports.Prisma.DetalleAdicionalBebidaScalarFieldEnum = {
+  id: 'id',
+  bebidaId: 'bebidaId',
+  detalleAdicionalId: 'detalleAdicionalId'
+};
+
+exports.Prisma.BebidaScalarFieldEnum = {
+  id: 'id',
+  presentacion: 'presentacion',
+  precio: 'precio',
+  tipoBebidaId: 'tipoBebidaId'
+};
+
+exports.Prisma.TipoBebidaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre'
+};
+
+exports.Prisma.DetalleAdicionalTaperScalarFieldEnum = {
+  id: 'id',
+  taperId: 'taperId',
+  detalleAdicionalId: 'detalleAdicionalId'
+};
+
+exports.Prisma.TaperScalarFieldEnum = {
+  id: 'id',
+  presentacion: 'presentacion',
+  precio: 'precio'
+};
+
+exports.Prisma.DetalleAdicionalEntradaScalarFieldEnum = {
+  id: 'id',
+  entradaId: 'entradaId',
+  detalleAdicionalId: 'detalleAdicionalId'
+};
+
+exports.Prisma.EntradaScalarFieldEnum = {
+  id: 'id',
+  precio: 'precio'
 };
 
 exports.Prisma.SortOrder = {
@@ -129,15 +239,106 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
   email: 'email',
   name: 'name',
-  password: 'password'
+  password: 'password',
+  refreshToken: 'refreshToken'
 };
 
+exports.Prisma.ClienteOrderByRelevanceFieldEnum = {
+  nome: 'nome',
+  dni: 'dni',
+  telefono: 'telefono',
+  email: 'email'
+};
+
+exports.Prisma.MesaOrderByRelevanceFieldEnum = {
+  numero: 'numero'
+};
+
+exports.Prisma.CartaOrderByRelevanceFieldEnum = {
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  precio: 'precio'
+};
+
+exports.Prisma.PlatoOrderByRelevanceFieldEnum = {
+  nombre: 'nombre',
+  descripcion: 'descripcion'
+};
+exports.Role = exports.$Enums.Role = {
+  ADMIN: 'ADMIN',
+  EMPLEADO: 'EMPLEADO'
+};
+
+exports.EstadoMesa = exports.$Enums.EstadoMesa = {
+  DISPONIBLE: 'DISPONIBLE',
+  OCUPADA: 'OCUPADA',
+  RESERVADA: 'RESERVADA'
+};
+
+exports.MetodoPago = exports.$Enums.MetodoPago = {
+  EFECTIVO: 'EFECTIVO',
+  TARJETA: 'TARJETA',
+  YAPE: 'YAPE'
+};
+
+exports.TipoComprobante = exports.$Enums.TipoComprobante = {
+  BOLETA: 'BOLETA',
+  FACTURA: 'FACTURA'
+};
+
+exports.PresentacionBebida = exports.$Enums.PresentacionBebida = {
+  PILSEN: 'PILSEN',
+  CUSQUEÑA: 'CUSQUEÑA',
+  HEINEKEN: 'HEINEKEN',
+  VASO: 'VASO',
+  MEDIA_JARRA: 'MEDIA_JARRA',
+  JARRA: 'JARRA',
+  PERSONAL: 'PERSONAL',
+  MEDIO_LITRO: 'MEDIO_LITRO',
+  GORDITA: 'GORDITA',
+  LITRO: 'LITRO',
+  LITRO_Y_MEDIO: 'LITRO_Y_MEDIO'
+};
+
+exports.TipoBebidaList = exports.$Enums.TipoBebidaList = {
+  CERVEZAS: 'CERVEZAS',
+  REFRESCOS: 'REFRESCOS',
+  AGUA: 'AGUA',
+  GASEOSAS: 'GASEOSAS'
+};
+
+exports.PresentacionTaper = exports.$Enums.PresentacionTaper = {
+  CHICO: 'CHICO',
+  MEDIANO: 'MEDIANO',
+  GRANDE: 'GRANDE'
+};
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Cliente: 'Cliente',
+  Mesa: 'Mesa',
+  Carta: 'Carta',
+  Plato: 'Plato',
+  TipoPago: 'TipoPago',
+  Comprobante: 'Comprobante',
+  Pedido: 'Pedido',
+  PedidoItem: 'PedidoItem',
+  DetalleAdicional: 'DetalleAdicional',
+  DetalleAdicionalBebida: 'DetalleAdicionalBebida',
+  Bebida: 'Bebida',
+  TipoBebida: 'TipoBebida',
+  DetalleAdicionalTaper: 'DetalleAdicionalTaper',
+  Taper: 'Taper',
+  DetalleAdicionalEntrada: 'DetalleAdicionalEntrada',
+  Entrada: 'Entrada'
 };
 
 /**

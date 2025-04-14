@@ -1,14 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {
-  Logger,
-  RequestMethod,
-  UseGuards,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { envs } from './config/envs';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AuthGuard } from './auth/guards/auth.guard';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap(): Promise<void> {
   const logger: Logger = new Logger("D'Classic");
@@ -21,6 +16,8 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.setGlobalPrefix('api', {
     exclude: [
