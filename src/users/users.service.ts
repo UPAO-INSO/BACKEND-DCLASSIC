@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
@@ -12,8 +13,11 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService extends PrismaClient implements OnModuleInit {
-  onModuleInit() {
-    this.$connect();
+  private readonly logger = new Logger('UsersService');
+
+  async onModuleInit() {
+    await this.$connect();
+    this.logger.log('MySQL connected');
   }
 
   async create(createUserDto: CreateUserDto) {

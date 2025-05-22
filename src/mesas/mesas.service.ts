@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
@@ -33,7 +34,22 @@ export class MesasService extends PrismaClient implements OnModuleInit {
     });
   }
 
+  async findByNumber(mesaNumber: string) {
+    const mesa = await this.mesa.findFirst({
+      where: { numero: mesaNumber },
+    });
+
+    if (!mesa) {
+      throw new BadRequestException(
+        `Mesa with number #${mesaNumber} exists yet`,
+      );
+    }
+
+    return mesa;
+  }
+
   async create(createMesaDto: CreateMesaDto) {
+    await this.findByNumber(createMesaDto.numero);
     return await this.mesa.create({
       data: createMesaDto,
     });
@@ -65,9 +81,7 @@ export class MesasService extends PrismaClient implements OnModuleInit {
 
   async findOne(id: number) {
     const mesa = await this.mesa.findFirst({
-      where: {
-        id,
-      },
+      where: { id },
     });
 
     if (!mesa) {

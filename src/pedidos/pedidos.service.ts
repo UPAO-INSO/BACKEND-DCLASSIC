@@ -1,30 +1,78 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { PrismaClient } from 'generated/prisma';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class PedidosService extends PrismaClient implements OnModuleInit {
-  onModuleInit() {
-    this.$connect();
-  }
-  create(createPedidoDto: CreatePedidoDto) {
-    return 'This action adds a new pedido';
+  private readonly logger = new Logger('PedidosService');
+
+  async onModuleInit() {
+    await this.$connect();
+    this.logger.log('MySQL connected');
   }
 
-  findAll() {
-    return `This action returns all pedidos`;
+  async create(createPedidoDto: CreatePedidoDto) {
+    // return this.pedido.create({
+    //   data: createPedidoDto,
+    // });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} pedido`;
+  async findAll(paginationDto: PaginationDto) {
+    let { page, limit } = paginationDto;
+
+    if (page === undefined || limit === undefined) {
+      page = 1;
+      limit = 10;
+    }
+
+    try {
+      const totalPages = await this.pedido.count();
+      const lastPage = Math.ceil(totalPages / limit);
+
+      return {
+        data: await this.pedido.findMany({
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        meta: {
+          total: totalPages,
+          page,
+          lastPage,
+        },
+      };
+    } catch (error) {
+      console.log;
+      throw new NotFoundException('No se encontraron pedidos', error.message);
+    }
   }
 
-  update(id: number, updatePedidoDto: UpdatePedidoDto) {
-    return `This action updates a #${id} pedido`;
+  async findOne(id: number) {
+    const pedido = await this.pedido.findFirst({
+      where: { id },
+    });
+
+    if (!pedido) throw new NotFoundException(`Pedido with id #${id} not found`);
+
+    return pedido;
   }
 
-  remove(id: number) {
+  async update(id: number, updatePedidoDto: UpdatePedidoDto) {
+    // await this.findOne(id);
+    // return this.pedido.update({
+    //   where: { id },
+    //   data: updatePedidoDto,
+    // });
+  }
+
+  async remove(id: number) {
     return `This action removes a #${id} pedido`;
   }
 }

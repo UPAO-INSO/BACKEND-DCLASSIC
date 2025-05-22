@@ -9,7 +9,9 @@ export class ClientesService extends PrismaClient implements OnModuleInit {
     this.$connect();
   }
   create(createClienteDto: CreateClienteDto) {
-    return 'This action adds a new cliente';
+    return this.cliente.create({
+      data: createClienteDto,
+    });
   }
 
   findAll() {
