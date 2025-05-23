@@ -1,15 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import {
-  PresentacionBebida,
-  PresentacionTaper,
-  TipoProducto,
-} from 'generated/prisma';
-import {
-  PresentacionBebidaList,
-  PresentacionTaperList,
-  TipoProductoList,
-} from 'src/products/enum/pedido.enum';
+import { IsBoolean, IsNumber, IsString, Min } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -25,20 +15,12 @@ export class CreateProductDto {
   @Type(() => Number)
   precio: number;
 
-  @IsEnum(TipoProductoList, {
-    message: `Valid type products are ${TipoProductoList}`,
-  })
-  TipoProducto?: TipoProducto;
+  @IsBoolean()
+  habilitado: boolean;
 
-  @IsOptional()
-  @IsEnum(PresentacionBebidaList, {
-    message: `Valid presentation bebida are ${PresentacionBebidaList}`,
-  })
-  presentacionBebida?: PresentacionBebida;
+  @IsBoolean()
+  disponible: boolean;
 
-  @IsOptional()
-  @IsEnum(PresentacionTaperList, {
-    message: `Valid presentation taper are ${PresentacionTaperList}`,
-  })
-  presentacionTaper?: PresentacionTaper;
+  @IsNumber()
+  tipoProductoId: number;
 }

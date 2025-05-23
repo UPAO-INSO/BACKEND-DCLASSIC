@@ -43,8 +43,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
             detail: exception.message,
           };
       }
+    } else if (exception instanceof Error) {
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      message = {
+        error: exception.name,
+        detail: exception.message,
+      };
     }
-
     response.status(status).json({
       success: false,
       statusCode: status,

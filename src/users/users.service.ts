@@ -10,10 +10,19 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaClient, Role } from 'generated/prisma';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import * as bcrypt from 'bcrypt';
+import { EmpleadosService } from 'src/empleados/empleados.service';
+import { PersonasService } from 'src/personas/personas.service';
 
 @Injectable()
 export class UsersService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger('UsersService');
+
+  constructor(
+    private readonly empleadoService: EmpleadosService,
+    private readonly personaService: PersonasService,
+  ) {
+    super();
+  }
 
   async onModuleInit() {
     await this.$connect();
@@ -21,7 +30,19 @@ export class UsersService extends PrismaClient implements OnModuleInit {
   }
 
   async create(createUserDto: CreateUserDto) {
-    const { email, password, name } = createUserDto;
+    const persona = await this.personaService.create({
+      nombre: createUserDto.name,
+      apellido: createUserDto.lastname,
+      telefono: createUserDto.phone || '',
+    });
+
+    const empleado = await this.empleadoService.create({
+      personaId: persona.id,
+      rolId: 1,
+      salario: 0,
+    });
+
+    const { email, password, username } = createUserDto;
 
     const existing = await this.user.findUnique({ where: { email } });
     if (existing) throw new ConflictException('El usuario ya existe');
@@ -29,27 +50,25 @@ export class UsersService extends PrismaClient implements OnModuleInit {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const totalUsers = await this.user.count();
-    const role = totalUsers === 0 ? Role.ADMIN : Role.EMPLEADO;
+    const role = totalUsers === 0 ? Role.ADMIN : Role.USER;
 
-    return this.user.create({
+    const user = await this.user.create({
       data: {
         email,
         password: hashedPassword,
-        name,
+        username,
+        refreshToken: '',
         role,
       },
     });
+
+    return user;
   }
 
   async findAll(paginationDto: PaginationDto) {
-    let { page, limit } = paginationDto;
+    const { page, limit } = paginationDto;
 
-    if (page === undefined || limit === undefined) {
-      page = 1;
-      limit = 10;
-    }
-
-    const totalPages = await this.user.count();
+    const totalPages = await this.rol.count();
     const lastPage = Math.ceil(totalPages / limit);
 
     return {

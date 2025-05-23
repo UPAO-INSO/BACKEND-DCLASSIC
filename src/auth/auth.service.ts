@@ -45,7 +45,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   private async generateRefreshToken(payload: any) {
     return this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '7d', // Expira en 7 días
+      expiresIn: '1d', // Expira en 7 días
     });
   }
 
@@ -85,10 +85,8 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
-    // const { email, password, name } = registerUserDto;
-
     try {
-      const user = await this.usersService.create(registerUserDto);
+      const user = await this.usersService.create({ ...registerUserDto });
 
       const payload = { id: user.id, email: user.email, role: user.role };
       const accessToken = await this.generateAccessToken(payload);
@@ -185,7 +183,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   async logout(userId: number) {
     await this.user.update({
       where: { id: userId },
-      data: { refreshToken: null },
+      data: { refreshToken: '' },
     });
   }
 }

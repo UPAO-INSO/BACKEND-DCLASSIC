@@ -26,15 +26,10 @@ export class PedidosService extends PrismaClient implements OnModuleInit {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    let { page, limit } = paginationDto;
-
-    if (page === undefined || limit === undefined) {
-      page = 1;
-      limit = 10;
-    }
-
     try {
-      const totalPages = await this.pedido.count();
+      const { page, limit } = paginationDto;
+
+      const totalPages = await this.rol.count();
       const lastPage = Math.ceil(totalPages / limit);
 
       return {
