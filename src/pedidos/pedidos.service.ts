@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from './../../generated/prisma';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()

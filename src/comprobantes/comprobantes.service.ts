@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CreateComprobanteDto } from './dto/create-comprobante.dto';
 import { UpdateComprobanteDto } from './dto/update-comprobante.dto';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from './../../generated/prisma';
 
 @Injectable()
 export class ComprobantesService extends PrismaClient implements OnModuleInit {

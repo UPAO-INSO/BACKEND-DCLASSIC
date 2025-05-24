@@ -7,7 +7,7 @@ import {
   MinLength,
   IsEnum,
 } from 'class-validator';
-import { Role } from 'generated/prisma';
+import { Role } from './../../../generated/prisma';
 
 export class RegisterEmpleadoDto {
   // Datos de persona

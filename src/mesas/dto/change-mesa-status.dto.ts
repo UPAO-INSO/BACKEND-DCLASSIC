@@ -1,6 +1,6 @@
 import { IsEnum, IsNumber } from 'class-validator';
 import { MesaStatusList } from '../enum/mesa.enum';
-import { EstadoMesa } from 'generated/prisma';
+import { EstadoMesa } from './../../../generated/prisma';
 
 export class ChangeMesaStatusDto {
   @IsNumber()

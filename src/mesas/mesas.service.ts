@@ -6,8 +6,8 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ChangeMesaStatusDto, CreateMesaDto, UpdateMesaDto } from './dto';
-import { PrismaClient } from 'generated/prisma';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PrismaClient } from './../../generated/prisma';
+import { PaginationDto } from './../common/dto/pagination.dto';
 
 @Injectable()
 export class MesasService extends PrismaClient implements OnModuleInit {

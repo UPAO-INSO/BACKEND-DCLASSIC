@@ -7,7 +7,8 @@ import {
   IsStrongPassword,
   Length,
 } from 'class-validator';
-import { Role } from 'generated/prisma';
+import { Role } from './../../../generated/prisma';
+import { Puesto } from 'src/empleados/enum/puesto.enum';
 
 export class CreateUserDto {
   @IsString()
@@ -22,6 +23,12 @@ export class CreateUserDto {
 
   @IsString()
   username: string;
+
+  @IsString()
+  @IsEnum(Puesto, {
+    message: `Values valid are ${Object.values(Puesto).join(', ')}`,
+  })
+  puesto: Puesto;
 
   @IsEmail()
   @IsString()

@@ -1,9 +1,11 @@
 import {
   IsEmail,
+  IsEnum,
   IsOptional,
   IsString,
   IsStrongPassword,
 } from 'class-validator';
+import { Puesto } from 'src/empleados/enum/puesto.enum';
 
 export class RegisterUserDto {
   @IsString()
@@ -22,6 +24,12 @@ export class RegisterUserDto {
   @IsString()
   @IsEmail()
   email: string;
+
+  @IsString()
+  @IsEnum(Puesto, {
+    message: `Values valid are ${Object.values(Puesto).join(', ')}`,
+  })
+  puesto: Puesto;
 
   @IsString()
   @IsStrongPassword()

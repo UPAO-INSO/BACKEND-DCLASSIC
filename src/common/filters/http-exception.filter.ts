@@ -6,7 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from './../../../generated/prisma';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -50,6 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         detail: exception.message,
       };
     }
+
     response.status(status).json({
       success: false,
       statusCode: status,

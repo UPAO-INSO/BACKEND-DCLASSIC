@@ -1,4 +1,4 @@
-import { EstadoMesa } from 'generated/prisma';
+import { EstadoMesa } from './../../../generated/prisma';
 
 export const MesaStatusList = [
   EstadoMesa.DISPONIBLE,

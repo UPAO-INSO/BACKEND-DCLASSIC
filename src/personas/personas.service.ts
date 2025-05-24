@@ -1,7 +1,12 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
-import { PrismaClient } from '../../generated/prisma/index';
+import { PrismaClient } from './../../generated/prisma/index';
 
 @Injectable()
 export class PersonasService extends PrismaClient implements OnModuleInit {
@@ -13,6 +18,14 @@ export class PersonasService extends PrismaClient implements OnModuleInit {
   }
 
   create(createPersonaDto: CreatePersonaDto) {
+    const { nombre, apellido, telefono } = createPersonaDto;
+
+    const existing = this.persona.findFirst({
+      where: { telefono, nombre, apellido },
+    });
+
+    if (!existing) throw new BadRequestException('Persona ya existe');
+
     return this.persona.create({
       data: createPersonaDto,
     });

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from './../../generated/prisma';
 import { CreateTipoProductDto } from './dto/create-tipo-product.dto';
 
 @Injectable()
