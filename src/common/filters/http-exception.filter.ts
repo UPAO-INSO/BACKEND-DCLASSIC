@@ -6,7 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from './../../../generated/prisma';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -43,6 +43,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
             detail: exception.message,
           };
       }
+    } else if (exception instanceof Error) {
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      message = {
+        error: exception.name,
+        detail: exception.message,
+      };
     }
 
     response.status(status).json({

@@ -5,9 +5,11 @@ import { ClientesModule } from './clientes/clientes.module';
 import { MesasModule } from './mesas/mesas.module';
 import { PedidosModule } from './pedidos/pedidos.module';
 import { ComprobantesModule } from './comprobantes/comprobantes.module';
-import { AdicionalesModule } from './adicionales/adicionales.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProductsModule } from './products/products.module';
+import { EmpleadosModule } from './empleados/empleados.module';
+import { PersonasModule } from './personas/personas.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -20,8 +22,10 @@ import { ProductsModule } from './products/products.module';
     MesasModule,
     PedidosModule,
     ComprobantesModule,
-    AdicionalesModule,
     ProductsModule,
+    EmpleadosModule,
+    PersonasModule,
+    RolesModule,
   ],
   controllers: [],
   providers: [],

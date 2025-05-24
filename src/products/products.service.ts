@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from './../../generated/prisma';
+import { CreateTipoProductDto } from './dto/create-tipo-product.dto';
 
 @Injectable()
 export class ProductsService extends PrismaClient implements OnModuleInit {
@@ -25,6 +26,19 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
     } catch (error) {
       throw new InternalServerErrorException(
         'Error creating product',
+        error.message,
+      );
+    }
+  }
+
+  async createTipo(createTipoProductDto: CreateTipoProductDto) {
+    try {
+      return await this.tipoProducto.create({
+        data: createTipoProductDto,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error creating product type',
         error.message,
       );
     }

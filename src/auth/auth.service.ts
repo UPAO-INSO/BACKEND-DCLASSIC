@@ -6,7 +6,7 @@ import {
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from './../../generated/prisma';
 import { JwtService } from '@nestjs/jwt';
 
 import * as bcrypt from 'bcrypt';
@@ -16,7 +16,6 @@ import { JwTPayload } from './interfaces/jwt-payload.interface';
 import { envs } from 'src/config/envs';
 import { LoginUserDto } from './dto';
 import { UsersService } from 'src/users/users.service';
-import { CurrentUser } from '../common/interfaces/current-user.interfaces';
 
 @Injectable()
 export class AuthService extends PrismaClient implements OnModuleInit {
@@ -34,43 +33,47 @@ export class AuthService extends PrismaClient implements OnModuleInit {
     this.logger.log('MySQL connected');
   }
 
-  private async generateAccessToken(payload: any) {
-    return this.jwtService.sign(payload, {
-      secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: '15m', // Expira en 15 minutos
-    });
+  private async generateAccessToken(payload: JwTPayload) {
+    return this.signJWT(payload, envs.jwtAccessSecret, '15m');
   }
 
-  // Función para generar refresh token
-  private async generateRefreshToken(payload: any) {
-    return this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '7d', // Expira en 7 días
-    });
+  private async generateRefreshToken(payload: JwTPayload) {
+    return this.signJWT(payload, envs.jwtRefreshSecret, '1d');
   }
 
-  async signJWT(payload: JwTPayload) {
-    return this.jwtService.sign(payload);
+  private async signJWT(
+    payload: JwTPayload,
+    secret: string,
+    expiresIn: string,
+  ) {
+    try {
+      return this.jwtService.sign(payload, { secret, expiresIn });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error al firmar token: ',
+        error.message,
+      );
+    }
   }
 
   async verifyToken(token: string) {
     try {
-      this.logger.debug('Verifying token...');
-      const { sub, iat, exp, ...user } = this.jwtService.verify(token, {
+      const { sub, iat, exp, ...user } = this.jwtService.verify<
+        JwTPayload & { iat: number; exp: number }
+      >(token, {
         secret: envs.jwtAccessSecret,
       });
 
       const expiresIn = exp * 1000 - Date.now();
 
+      const payload: JwTPayload = { sub, ...user };
+
       let newToken = token;
 
-      this.logger.debug('expiresIn: ' + expiresIn);
-
-      if (expiresIn < 15 * 60 * 1000) {
-        newToken = await this.signJWT({ ...user });
+      // Solo renueva si faltan menos de 2 minutos (por ejemplo)
+      if (expiresIn < 2 * 60 * 1000) {
+        newToken = await this.generateAccessToken(payload);
       }
-
-      this.logger.debug('newToken: ' + newToken);
 
       return {
         user: {
@@ -80,17 +83,21 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         token: newToken,
       };
     } catch (error) {
-      throw new InternalServerErrorException('Invalid token: ', error.message);
+      throw new InternalServerErrorException('Invalid token: ' + error.message);
     }
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
-    // const { email, password, name } = registerUserDto;
-
     try {
-      const user = await this.usersService.create(registerUserDto);
+      const user = await this.usersService.create({ ...registerUserDto });
 
-      const payload = { id: user.id, email: user.email, role: user.role };
+      const payload: JwTPayload = {
+        sub: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      };
+
       const accessToken = await this.generateAccessToken(payload);
       const refreshToken = await this.generateRefreshToken(payload);
 
@@ -133,7 +140,12 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         throw new NotFoundException('User/Password incorrectos');
       }
 
-      const payload = { id: user.id, email: user.email, role: user.role };
+      const payload: JwTPayload = {
+        sub: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      };
 
       const accessToken = await this.generateAccessToken(payload);
       const refreshToken = await this.generateRefreshToken(payload);
@@ -160,7 +172,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   async refreshAccessToken(refreshToken: string) {
     try {
       const payload = await this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET,
+        secret: envs.jwtRefreshSecret,
       });
 
       // Busca al usuario y verifica que el token coincida
@@ -173,8 +185,9 @@ export class AuthService extends PrismaClient implements OnModuleInit {
       }
 
       return this.generateAccessToken({
-        id: user.id,
+        sub: user.id,
         email: user.email,
+        username: user.username,
         role: user.role,
       });
     } catch (error) {
@@ -185,7 +198,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   async logout(userId: number) {
     await this.user.update({
       where: { id: userId },
-      data: { refreshToken: null },
+      data: { refreshToken: '' },
     });
   }
 }

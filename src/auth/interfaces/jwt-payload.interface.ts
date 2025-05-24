@@ -1,5 +1,6 @@
-export class JwTPayload {
-  id: number;
+export interface JwTPayload {
+  sub: number; // id del usuario
   email: string;
-  name: string;
+  username: string;
+  role: string;
 }

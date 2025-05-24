@@ -27,7 +27,7 @@ enum EstadoPedido {
 
 enum EstadoMesa {
   OCUPADA
-  LIBRE
+  DISPONIBLE
   RESERVADA
 }
 
@@ -37,12 +37,12 @@ enum TipoComprobante {
 }
 
 model User {
-  id           Int     @id @default(autoincrement())
-  email        String  @unique
+  id           Int    @id @default(autoincrement())
+  email        String @unique
   username     String
   password     String
-  role         Role    @default(USER)
-  refreshToken String? @unique
+  role         Role   @default(USER)
+  refreshToken String @unique
 
   empleadoId Int?      @unique
   empleado   Empleado? @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
@@ -99,7 +99,7 @@ model Mesa {
   numero    String     @db.VarChar(2)
   capacidad String     @db.VarChar(2)
   piso      Int
-  estado    EstadoMesa @default(LIBRE)
+  estado    EstadoMesa @default(DISPONIBLE)
 
   pedidos Pedido[]
 }

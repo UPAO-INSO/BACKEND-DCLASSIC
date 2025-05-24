@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from './../../generated/prisma';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
@@ -26,15 +26,10 @@ export class PedidosService extends PrismaClient implements OnModuleInit {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    let { page, limit } = paginationDto;
-
-    if (page === undefined || limit === undefined) {
-      page = 1;
-      limit = 10;
-    }
-
     try {
-      const totalPages = await this.pedido.count();
+      const { page, limit } = paginationDto;
+
+      const totalPages = await this.rol.count();
       const lastPage = Math.ceil(totalPages / limit);
 
       return {
