@@ -7,6 +7,7 @@ import {
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
 import { PrismaClient } from './../../generated/prisma/index';
+import { CreatePersonaFullDto } from './dto/create-persona-full.dto';
 
 @Injectable()
 export class PersonasService extends PrismaClient implements OnModuleInit {
@@ -29,6 +30,43 @@ export class PersonasService extends PrismaClient implements OnModuleInit {
     return this.persona.create({
       data: createPersonaDto,
     });
+  }
+
+  async createFull(data: CreatePersonaFullDto) {
+    const persona = await this.persona.create({
+      data: {
+        nombre: data.nombre,
+        apellido: data.apellido,
+        telefono: data.telefono || '',
+        empleado: {
+          create: {
+            salario: data.salario,
+            puesto: {
+              connect: { id: data.puestoId },
+            },
+            usuario: {
+              create: {
+                email: data.usuario.email,
+                username: data.usuario.username,
+                password: data.usuario.password,
+                refreshToken: '',
+                role: data.usuario.role,
+              },
+            },
+          },
+        },
+      },
+      include: {
+        empleado: {
+          include: {
+            usuario: true,
+            puesto: true,
+          },
+        },
+      },
+    });
+
+    return persona;
   }
 
   findAll() {

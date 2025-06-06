@@ -9,17 +9,17 @@ import {
   Query,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { CreatePuestoDto } from './dto/create-puesto.dto';
+import { UpdatePuestoDto } from './dto/update-puesto.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
-@Controller('roles')
+@Controller('puestos')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return this.rolesService.create(createRoleDto);
+  create(@Body() createPuestoDto: CreatePuestoDto) {
+    return this.rolesService.create(createPuestoDto);
   }
 
   @Get()
@@ -33,8 +33,8 @@ export class RolesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-    return this.rolesService.update(+id, updateRoleDto);
+  update(@Param('id') id: string, @Body() updatePuestoDto: UpdatePuestoDto) {
+    return this.rolesService.update(+id, updatePuestoDto);
   }
 
   @Delete(':id')

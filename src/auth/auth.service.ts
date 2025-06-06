@@ -34,11 +34,11 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   }
 
   private async generateAccessToken(payload: JwTPayload) {
-    return this.signJWT(payload, envs.jwtAccessSecret, '15m');
+    return await this.signJWT(payload, envs.jwtAccessSecret, '15m');
   }
 
   private async generateRefreshToken(payload: JwTPayload) {
-    return this.signJWT(payload, envs.jwtRefreshSecret, '1d');
+    return await this.signJWT(payload, envs.jwtRefreshSecret, '1d');
   }
 
   private async signJWT(
@@ -57,116 +57,104 @@ export class AuthService extends PrismaClient implements OnModuleInit {
   }
 
   async verifyToken(token: string) {
-    try {
-      const { sub, iat, exp, ...user } = this.jwtService.verify<
-        JwTPayload & { iat: number; exp: number }
-      >(token, {
-        secret: envs.jwtAccessSecret,
-      });
+    const { sub, iat, exp, ...user } = this.jwtService.verify<
+      JwTPayload & { iat: number; exp: number }
+    >(token, {
+      secret: envs.jwtAccessSecret,
+    });
 
-      const expiresIn = exp * 1000 - Date.now();
+    const expiresIn = exp * 1000 - Date.now();
 
-      const payload: JwTPayload = { sub, ...user };
+    const payload: JwTPayload = { sub, ...user };
 
-      let newToken = token;
+    let newToken = token;
 
-      // Solo renueva si faltan menos de 2 minutos (por ejemplo)
-      if (expiresIn < 2 * 60 * 1000) {
-        newToken = await this.generateAccessToken(payload);
-      }
-
-      return {
-        user: {
-          ...user,
-          id: sub,
-        },
-        token: newToken,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException('Invalid token: ' + error.message);
+    // Solo renueva si faltan menos de 2 minutos
+    if (expiresIn < 2 * 60 * 1000) {
+      newToken = await this.generateAccessToken(payload);
     }
+
+    return {
+      user: {
+        ...user,
+        id: sub,
+      },
+      token: newToken,
+    };
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
-    try {
-      const user = await this.usersService.create({ ...registerUserDto });
+    const user = await this.usersService.create(registerUserDto);
 
-      const payload: JwTPayload = {
-        sub: user.id,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-      };
+    if (!user) throw new InternalServerErrorException('Error creating user');
 
-      const accessToken = await this.generateAccessToken(payload);
-      const refreshToken = await this.generateRefreshToken(payload);
+    const payload: JwTPayload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+    };
 
-      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    const accessToken = await this.generateAccessToken(payload);
+    const refreshToken = await this.generateRefreshToken(payload);
 
-      await this.user.update({
-        where: { id: user.id },
-        data: { refreshToken: hashedRefreshToken },
-      });
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
-      const { password: _, refreshToken: __, ...rest } = user;
+    await this.user.update({
+      where: { id: user.id },
+      data: { refreshToken: hashedRefreshToken },
+    });
 
-      return {
-        user: rest,
-        accessToken,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Error creating user: ',
-        error.message,
-      );
-    }
+    const { password: _, refreshToken: __, ...rest } = user;
+
+    return {
+      user: rest,
+      accessToken,
+    };
   }
 
   async loginUser(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
 
-    try {
-      const user = await this.user.findUnique({
-        where: { email },
-      });
+    const user = await this.user.findFirst({
+      where: {
+        email,
+      },
+    });
 
-      if (!user) {
-        throw new NotFoundException('User/Password incorrectos');
-      }
-
-      const isPasswordValid = bcrypt.compareSync(password, user.password);
-
-      if (!isPasswordValid) {
-        throw new NotFoundException('User/Password incorrectos');
-      }
-
-      const payload: JwTPayload = {
-        sub: user.id,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-      };
-
-      const accessToken = await this.generateAccessToken(payload);
-      const refreshToken = await this.generateRefreshToken(payload);
-
-      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-
-      await this.user.update({
-        where: { id: user.id },
-        data: { refreshToken: hashedRefreshToken },
-      });
-
-      const { password: __, refreshToken: _, ...rest } = user;
-
-      return {
-        user: rest,
-        accessToken,
-        refreshToken,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException('Error logging', error.message);
+    if (!user) {
+      throw new NotFoundException('User/Password incorrectos');
     }
+
+    const isPasswordValid = bcrypt.compareSync(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new NotFoundException('User/Password incorrectos');
+    }
+
+    const payload: JwTPayload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+    };
+
+    const accessToken = await this.generateAccessToken(payload);
+    const refreshToken = await this.generateRefreshToken(payload);
+
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await this.user.update({
+      where: { id: user.id },
+      data: { refreshToken: hashedRefreshToken },
+    });
+
+    const { password: __, refreshToken: _, ...rest } = user;
+
+    return {
+      user: rest,
+      accessToken,
+    };
   }
 
   async refreshAccessToken(refreshToken: string) {
@@ -184,14 +172,15 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         );
       }
 
-      return this.generateAccessToken({
+      return await this.generateAccessToken({
         sub: user.id,
         email: user.email,
         username: user.username,
         role: user.role,
       });
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Invalid refresh token', error.message);
+    } finally {
     }
   }
 

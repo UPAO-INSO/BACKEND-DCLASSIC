@@ -5,11 +5,10 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { CreatePuestoDto } from './dto/create-puesto.dto';
+import { UpdatePuestoDto } from './dto/update-puesto.dto';
 import { PrismaClient } from './../../generated/prisma';
 import { PaginationDto } from './../common/dto/pagination.dto';
-import { Puesto } from 'src/empleados/enum/puesto.enum';
 
 @Injectable()
 export class RolesService extends PrismaClient implements OnModuleInit {
@@ -20,28 +19,26 @@ export class RolesService extends PrismaClient implements OnModuleInit {
     this.logger.log('MySQL connected');
   }
 
-  async create(createRoleDto: CreateRoleDto) {
-    const { nombre } = createRoleDto;
+  async create(createPuestoDto: CreatePuestoDto) {
+    const { nombre } = createPuestoDto;
 
-    const existing = await this.rol.findFirst({
-      where: { nombre },
-    });
+    const existing = await this.findByNombre(nombre);
 
-    if (existing) throw new BadRequestException('Rol ya existe');
+    if (existing) throw new BadRequestException('Puesto already exists');
 
-    return await this.rol.create({
-      data: createRoleDto,
+    return await this.puesto.create({
+      data: createPuestoDto,
     });
   }
 
   async findAll(paginationDto: PaginationDto) {
     const { page, limit } = paginationDto;
 
-    const totalPages = await this.rol.count();
+    const totalPages = await this.puesto.count();
     const lastPage = Math.ceil(totalPages / limit);
 
     return {
-      data: await this.rol.findMany({
+      data: await this.puesto.findMany({
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -53,24 +50,31 @@ export class RolesService extends PrismaClient implements OnModuleInit {
     };
   }
 
-  async findByNombre(nombre: Puesto) {
-    const rol = await this.rol.findFirst({
+  async findByNombre(nombre: string) {
+    return await this.puesto.findFirst({
       where: {
         nombre,
       },
     });
-
-    if (!rol) throw new NotFoundException('Rol was not found');
-
-    return rol;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
+  async findOne(id: number) {
+    const puesto = await this.puesto.findFirst({
+      where: { id },
+    });
+
+    if (!puesto) throw new NotFoundException('Puesto was not found');
+
+    return puesto;
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
+  async update(id: number, updatePuestoDto: UpdatePuestoDto) {
+    await this.findOne(id);
+
+    return await this.puesto.update({
+      where: { id },
+      data: updatePuestoDto,
+    });
   }
 
   remove(id: number) {

@@ -10,6 +10,7 @@ import { ProductsModule } from './products/products.module';
 import { EmpleadosModule } from './empleados/empleados.module';
 import { PersonasModule } from './personas/personas.module';
 import { RolesModule } from './roles/roles.module';
+import { TipoProductoModule } from './tipo-producto/tipo-producto.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RolesModule } from './roles/roles.module';
     EmpleadosModule,
     PersonasModule,
     RolesModule,
+    TipoProductoModule,
   ],
   controllers: [],
   providers: [],

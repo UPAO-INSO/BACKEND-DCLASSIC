@@ -2,12 +2,13 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaClient } from './../../generated/prisma';
-import { CreateTipoProductDto } from './dto/create-tipo-product.dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class ProductsService extends PrismaClient implements OnModuleInit {
@@ -31,25 +32,34 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
     }
   }
 
-  async createTipo(createTipoProductDto: CreateTipoProductDto) {
-    try {
-      return await this.tipoProducto.create({
-        data: createTipoProductDto,
-      });
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Error creating product type',
-        error.message,
-      );
-    }
-  }
+  async findAll(paginationDto: PaginationDto) {
+    const { page, limit } = paginationDto;
 
-  findAll() {
-    return `This action returns all products`;
+    const totalPages = await this.producto.count();
+    const lastPage = Math.ceil(totalPages / limit);
+
+    return {
+      data: await this.producto.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      meta: {
+        total: totalPages,
+        page,
+        lastPage,
+      },
+    };
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} product`;
+    const product = this.producto.findFirst({
+      where: { id },
+    });
+
+    if (!product)
+      throw new NotFoundException(`Product with id ${id} not found`);
+
+    return product;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
@@ -58,5 +68,25 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
 
   remove(id: number) {
     return `This action removes a #${id} product`;
+  }
+
+  async validateProducts(ids: number[]) {
+    ids = Array.from(new Set(ids));
+
+    const products = await this.producto.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+
+    if (products.length !== ids.length) {
+      throw new NotFoundException({
+        message: 'Some products were not found',
+      });
+    }
+
+    return products;
   }
 }

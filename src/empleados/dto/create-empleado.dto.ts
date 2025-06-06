@@ -6,14 +6,8 @@ export class CreateEmpleadoDto {
   salario: number;
 
   @IsNumber()
-  rolId: number;
+  puestoId: number;
 
   @IsNumber()
-  personaId: number;
-
-  @IsString()
-  @IsEnum(Puesto, {
-    message: `Values valid are ${Object.values(Puesto).join()}`,
-  })
-  puesto: Puesto;
+  usuarioId: number;
 }
