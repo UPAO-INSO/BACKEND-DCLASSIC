@@ -1,29 +1,28 @@
-import { IsInt, IsOptional, ValidateNested } from 'class-validator';
-import { CreatePedidoTaperDto } from './create-pedido-taper.dto';
-import { CreatePedidoEntradaDto } from './create-pedido-entrada.dto';
-import { CreatePedidoBebidaDto } from './create-pedido-bebida.dto';
-import { Type } from 'class-transformer';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { EstadoPedido } from 'generated/prisma';
 
 export class CreatePedidoDto {
-  @IsInt()
-  mesaId: number;
-
+  @IsNumber()
   @IsOptional()
-  @IsInt()
   clienteId?: number;
 
-  @ValidateNested({ each: true })
-  @Type(() => CreatePedidoBebidaDto)
   @IsOptional()
-  pedidoBebidas?: CreatePedidoBebidaDto[];
+  @IsNumber()
+  mesaId?: number;
 
-  @ValidateNested({ each: true })
-  @Type(() => CreatePedidoTaperDto)
+  @IsNumber()
   @IsOptional()
-  pedidoTapers?: CreatePedidoTaperDto[];
+  comprobanteId?: number;
 
-  @ValidateNested({ each: true })
-  @Type(() => CreatePedidoEntradaDto)
-  @IsOptional()
-  pedidoEntradas?: CreatePedidoEntradaDto[];
+  @IsNumber()
+  empleadoId: number;
+
+  @IsString()
+  comentario: string;
+
+  @IsString()
+  @IsEnum(EstadoPedido, {
+    message: `El estado del pedido debe ser ${Object.values(EstadoPedido).join(', ')}`,
+  })
+  estado: EstadoPedido;
 }

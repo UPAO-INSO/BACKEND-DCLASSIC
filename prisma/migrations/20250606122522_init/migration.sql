@@ -6,14 +6,12 @@ CREATE TABLE `User` (
     `password` VARCHAR(191) NOT NULL,
     `role` ENUM('ADMIN', 'USER') NOT NULL DEFAULT 'USER',
     `refreshToken` VARCHAR(191) NOT NULL,
-    `empleadoId` INTEGER NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
     `last_login` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `User_email_key`(`email`),
     UNIQUE INDEX `User_refreshToken_key`(`refreshToken`),
-    UNIQUE INDEX `User_empleadoId_key`(`empleadoId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -33,9 +31,7 @@ CREATE TABLE `Persona` (
 CREATE TABLE `Cliente` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `correo` VARCHAR(25) NOT NULL,
-    `personaId` INTEGER NOT NULL,
 
-    UNIQUE INDEX `Cliente_personaId_key`(`personaId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -43,15 +39,15 @@ CREATE TABLE `Cliente` (
 CREATE TABLE `Empleado` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `salario` DOUBLE NOT NULL,
-    `rolId` INTEGER NOT NULL,
-    `personaId` INTEGER NOT NULL,
+    `puestoId` INTEGER NOT NULL,
+    `usuarioId` INTEGER NOT NULL,
 
-    UNIQUE INDEX `Empleado_personaId_key`(`personaId`),
+    UNIQUE INDEX `Empleado_usuarioId_key`(`usuarioId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Rol` (
+CREATE TABLE `Puesto` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `nombre` VARCHAR(25) NOT NULL,
 
@@ -74,11 +70,14 @@ CREATE TABLE `Pedido` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `estado` ENUM('PENDIENTE', 'ENTREGADO', 'CANCELADO') NOT NULL DEFAULT 'PENDIENTE',
     `comentario` VARCHAR(250) NULL,
-    `mesaId` INTEGER NOT NULL,
+    `mesaId` INTEGER NULL,
     `clienteId` INTEGER NULL,
+    `comprobanteId` INTEGER NULL,
+    `empleadoId` INTEGER NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,
 
+    UNIQUE INDEX `Pedido_comprobanteId_key`(`comprobanteId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -127,13 +126,13 @@ CREATE TABLE `TipoProducto` (
 CREATE TABLE `Comprobante` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `tipoComprobante` ENUM('BOLETA', 'FACTURA') NOT NULL DEFAULT 'BOLETA',
-    `empresaId` INTEGER NOT NULL,
+    `empresaId` INTEGER NULL,
     `tipoPagoId` INTEGER NOT NULL,
-    `pedidoId` INTEGER NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NULL,
+    `pedidoId` INTEGER NULL,
 
-    UNIQUE INDEX `Comprobante_pedidoId_key`(`pedidoId`),
+    UNIQUE INDEX `Comprobante_tipoPagoId_key`(`tipoPagoId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -156,22 +155,28 @@ CREATE TABLE `TipoPago` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `User` ADD CONSTRAINT `User_empleadoId_fkey` FOREIGN KEY (`empleadoId`) REFERENCES `Empleado`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Cliente` ADD CONSTRAINT `Cliente_id_fkey` FOREIGN KEY (`id`) REFERENCES `Persona`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Cliente` ADD CONSTRAINT `Cliente_personaId_fkey` FOREIGN KEY (`personaId`) REFERENCES `Persona`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Empleado` ADD CONSTRAINT `Empleado_id_fkey` FOREIGN KEY (`id`) REFERENCES `Persona`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Empleado` ADD CONSTRAINT `Empleado_personaId_fkey` FOREIGN KEY (`personaId`) REFERENCES `Persona`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `Empleado` ADD CONSTRAINT `Empleado_puestoId_fkey` FOREIGN KEY (`puestoId`) REFERENCES `Puesto`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Empleado` ADD CONSTRAINT `Empleado_rolId_fkey` FOREIGN KEY (`rolId`) REFERENCES `Rol`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Empleado` ADD CONSTRAINT `Empleado_usuarioId_fkey` FOREIGN KEY (`usuarioId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Pedido` ADD CONSTRAINT `Pedido_mesaId_fkey` FOREIGN KEY (`mesaId`) REFERENCES `Mesa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Pedido` ADD CONSTRAINT `Pedido_mesaId_fkey` FOREIGN KEY (`mesaId`) REFERENCES `Mesa`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Pedido` ADD CONSTRAINT `Pedido_clienteId_fkey` FOREIGN KEY (`clienteId`) REFERENCES `Cliente`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Pedido` ADD CONSTRAINT `Pedido_comprobanteId_fkey` FOREIGN KEY (`comprobanteId`) REFERENCES `Comprobante`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Pedido` ADD CONSTRAINT `Pedido_empleadoId_fkey` FOREIGN KEY (`empleadoId`) REFERENCES `Empleado`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `PedidoEmpleado` ADD CONSTRAINT `PedidoEmpleado_pedidoId_fkey` FOREIGN KEY (`pedidoId`) REFERENCES `Pedido`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -189,10 +194,7 @@ ALTER TABLE `PedidoProducto` ADD CONSTRAINT `PedidoProducto_productoId_fkey` FOR
 ALTER TABLE `Producto` ADD CONSTRAINT `Producto_tipoProductoId_fkey` FOREIGN KEY (`tipoProductoId`) REFERENCES `TipoProducto`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Comprobante` ADD CONSTRAINT `Comprobante_empresaId_fkey` FOREIGN KEY (`empresaId`) REFERENCES `Empresa`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Comprobante` ADD CONSTRAINT `Comprobante_empresaId_fkey` FOREIGN KEY (`empresaId`) REFERENCES `Empresa`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Comprobante` ADD CONSTRAINT `Comprobante_tipoPagoId_fkey` FOREIGN KEY (`tipoPagoId`) REFERENCES `TipoPago`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Comprobante` ADD CONSTRAINT `Comprobante_pedidoId_fkey` FOREIGN KEY (`pedidoId`) REFERENCES `Pedido`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

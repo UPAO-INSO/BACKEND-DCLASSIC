@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { CreateEmpleadoDto } from './dto/create-empleado.dto';
 import { UpdateEmpleadoDto } from './dto/update-empleado.dto';
 import { PrismaClient } from './../../generated/prisma';
@@ -20,22 +25,24 @@ export class EmpleadosService extends PrismaClient implements OnModuleInit {
   }
 
   async create(createEmpleadoDto: CreateEmpleadoDto) {
-    const { puesto: __, ...rest } = createEmpleadoDto;
-
     return await this.empleado.create({
-      data: rest,
+      data: createEmpleadoDto,
     });
   }
 
-  async calcularSalario(puesto: Puesto) {
-    const { id: __, nombre } = await this.rolService.findByNombre(puesto);
+  async calcularSalario(nombrePuesto: string) {
+    const puesto = await this.rolService.findByNombre(nombrePuesto);
+
+    if (!puesto) {
+      throw new NotFoundException(`Puesto ${puesto} not found`);
+    }
 
     const puestos: Puesto[] = Object.values(Puesto);
 
     let salario = 0;
 
     puestos.forEach(() => {
-      switch (nombre) {
+      switch (puesto.nombre) {
         case Puesto.CAJERO:
           return (salario = 1200);
         case Puesto.COCINERO:
@@ -70,7 +77,15 @@ export class EmpleadosService extends PrismaClient implements OnModuleInit {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} empleado`;
+    const empleado = this.empleado.findFirst({
+      where: { id },
+    });
+
+    if (!empleado) {
+      throw new NotFoundException(`Empleado with id ${id} not found`);
+    }
+
+    return empleado;
   }
 
   update(id: number, updateEmpleadoDto: UpdateEmpleadoDto) {

@@ -5,7 +5,6 @@ interface EnvVars {
   PORT: number;
   JWT_ACCESS_SECRET: string;
   JWT_REFRESH_SECRET: string;
-  RUC: string;
 }
 
 const envsSchema = joi
@@ -13,7 +12,6 @@ const envsSchema = joi
     PORT: joi.number().required(),
     JWT_ACCESS_SECRET: joi.string().required(),
     JWT_REFRESH_SECRET: joi.string().required(),
-    RUC: joi.string().required(),
   })
   .unknown(true);
 
@@ -29,5 +27,4 @@ export const envs = {
   port: envVars.PORT,
   jwtAccessSecret: envVars.JWT_ACCESS_SECRET,
   jwtRefreshSecret: envVars.JWT_REFRESH_SECRET,
-  ruc: envVars.RUC,
 };

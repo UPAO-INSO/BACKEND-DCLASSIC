@@ -37,19 +37,18 @@ enum TipoComprobante {
 }
 
 model User {
-  id           Int    @id @default(autoincrement())
-  email        String @unique
-  username     String
-  password     String
-  role         Role   @default(USER)
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  username String
+  password String
+  role     Role   @default(USER)
+
   refreshToken String @unique
 
-  empleadoId Int?      @unique
-  empleado   Empleado? @relation(fields: [empleadoId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  lastLogin DateTime @default(now()) @map("last_login")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  lastLogin DateTime  @default(now()) @map("last_login")
+  Empleado  Empleado?
 }
 
 model Persona {
@@ -68,9 +67,7 @@ model Cliente {
   id     Int    @id @default(autoincrement())
   correo String @db.VarChar(25)
 
-  personaId Int @unique
-
-  persona Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  persona Persona  @relation(fields: [id], references: [id], onDelete: Cascade)
   pedidos Pedido[]
 }
 
@@ -78,16 +75,18 @@ model Empleado {
   id      Int   @id @default(autoincrement())
   salario Float
 
-  rolId     Int
-  personaId Int @unique
+  puestoId  Int
+  usuarioId Int @unique
 
-  persona Persona          @relation(fields: [personaId], references: [id], onDelete: Cascade)
-  rol     Rol              @relation(fields: [rolId], references: [id])
+  persona Persona @relation(fields: [id], references: [id], onDelete: Cascade)
+  puesto  Puesto  @relation(fields: [puestoId], references: [id])
+  usuario User    @relation(fields: [usuarioId], references: [id])
+
   pedidos PedidoEmpleado[]
-  User    User?
+  Pedido  Pedido[]
 }
 
-model Rol {
+model Puesto {
   id     Int    @id @default(autoincrement())
   nombre String @db.VarChar(25)
 
@@ -108,16 +107,22 @@ model Pedido {
   id         Int          @id @default(autoincrement())
   estado     EstadoPedido @default(PENDIENTE)
   comentario String?      @db.VarChar(250)
-  mesaId     Int
-  clienteId  Int?
-  createdAt  DateTime     @default(now()) @map("created_at")
-  updatedAt  DateTime?    @map("updated_at")
 
-  mesa        Mesa             @relation(fields: [mesaId], references: [id])
-  cliente     Cliente?         @relation(fields: [clienteId], references: [id])
-  empleados   PedidoEmpleado[]
-  productos   PedidoProducto[]
-  comprobante Comprobante?
+  mesaId        Int?
+  clienteId     Int?
+  comprobanteId Int? @unique
+  empleadoId    Int
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  mesa        Mesa?        @relation(fields: [mesaId], references: [id])
+  cliente     Cliente?     @relation(fields: [clienteId], references: [id])
+  comprobante Comprobante? @relation(fields: [comprobanteId], references: [id])
+  empleado    Empleado     @relation(fields: [empleadoId], references: [id])
+
+  empleados PedidoEmpleado[]
+  productos PedidoProducto[]
 }
 
 model PedidoEmpleado {
@@ -163,15 +168,17 @@ model TipoProducto {
 model Comprobante {
   id              Int             @id @default(autoincrement())
   tipoComprobante TipoComprobante @default(BOLETA)
-  empresaId       Int
-  tipoPagoId      Int
-  pedidoId        Int             @unique
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime?       @map("updated_at")
 
-  empresa  Empresa  @relation(fields: [empresaId], references: [id])
+  empresaId  Int?
+  tipoPagoId Int  @unique
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  empresa  Empresa? @relation(fields: [empresaId], references: [id])
   tipoPago TipoPago @relation(fields: [tipoPagoId], references: [id])
-  pedido   Pedido   @relation(fields: [pedidoId], references: [id])
+  pedido   Pedido?
+  pedidoId Int?
 }
 
 model Empresa {

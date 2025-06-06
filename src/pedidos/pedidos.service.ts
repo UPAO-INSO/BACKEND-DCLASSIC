@@ -20,16 +20,16 @@ export class PedidosService extends PrismaClient implements OnModuleInit {
   }
 
   async create(createPedidoDto: CreatePedidoDto) {
-    // return this.pedido.create({
-    //   data: createPedidoDto,
-    // });
+    return this.pedido.create({
+      data: createPedidoDto,
+    });
   }
 
   async findAll(paginationDto: PaginationDto) {
     try {
       const { page, limit } = paginationDto;
 
-      const totalPages = await this.rol.count();
+      const totalPages = await this.pedido.count();
       const lastPage = Math.ceil(totalPages / limit);
 
       return {
@@ -60,14 +60,15 @@ export class PedidosService extends PrismaClient implements OnModuleInit {
   }
 
   async update(id: number, updatePedidoDto: UpdatePedidoDto) {
-    // await this.findOne(id);
-    // return this.pedido.update({
-    //   where: { id },
-    //   data: updatePedidoDto,
-    // });
+    await this.findOne(id);
+    return this.pedido.update({
+      where: { id },
+      data: updatePedidoDto,
+    });
   }
 
   async remove(id: number) {
+    await this.findOne(id);
     return `This action removes a #${id} pedido`;
   }
 }

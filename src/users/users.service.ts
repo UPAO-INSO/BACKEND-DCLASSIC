@@ -39,47 +39,39 @@ export class UsersService extends PrismaClient implements OnModuleInit {
     const existing = await this.user.findUnique({ where: { email } });
     if (existing) throw new ConflictException('El usuario ya existe');
 
-    const { id: rolId } = await this.rolService.findByNombre(puesto);
-
-    const { id: personaId } = await this.personaService.create({
-      nombre: name,
-      apellido: lastname,
-      telefono: phone || '',
-    });
+    const puestoFound = await this.rolService.findByNombre(puesto);
+    if (!puestoFound)
+      throw new NotFoundException(`Puesto ${puesto} no encontrado`);
 
     const salario = await this.empleadoService.calcularSalario(puesto);
     if (salario === 0) throw new BadRequestException('Salario mal calculado');
-
-    const { id: empleadoId } = await this.empleadoService.create({
-      personaId,
-      rolId,
-      puesto,
-      salario,
-    });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const totalUsers = await this.user.count();
     const role = totalUsers === 0 ? Role.ADMIN : Role.USER;
 
-    const user = await this.user.create({
-      data: {
+    const persona = await this.personaService.createFull({
+      nombre: name,
+      apellido: lastname,
+      telefono: phone || '',
+      puestoId: puestoFound.id,
+      salario,
+      usuario: {
         email,
-        password: hashedPassword,
         username,
-        refreshToken: '',
+        password: hashedPassword,
         role,
-        empleadoId,
       },
     });
 
-    return user;
+    return persona?.empleado?.usuario;
   }
 
   async findAll(paginationDto: PaginationDto) {
     const { page, limit } = paginationDto;
 
-    const totalPages = await this.rol.count();
+    const totalPages = await this.user.count();
     const lastPage = Math.ceil(totalPages / limit);
 
     return {
